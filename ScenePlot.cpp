@@ -6,6 +6,8 @@
 #include <QTextStream>
 #include<QDebug>
 #include <QPoint>
+#include <QFileDialog>
+#include <QString>
 ScenePlot::ScenePlot(QWidget *parent) :
    QDialog(parent),
    ui(new Ui::ScenePlot)
@@ -83,8 +85,17 @@ void ScenePlot::updateData()
    ui->customPlot->replot();
    }
 void ScenePlot::saveToFile(){
-    QFile file("graph1.jpg");
-     ui->customPlot->saveJpg("graph1.jpg");
+    QString name;
+    QString format=".jpg";
+    name=QFileDialog::getSaveFileName(nullptr,"Сохранить","*.jpg");
+    if(!name.isEmpty()){
+       if(!name.contains(format)){
+           name+=format;
+       }
+        QFile file(name);
+        ui->customPlot->saveJpg(name);
+    }
+
 }
 void ScenePlot::logScalex(){
     if(! ui->xlog->isChecked()){
