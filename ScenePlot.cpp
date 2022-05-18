@@ -86,16 +86,15 @@ void ScenePlot::updateData()
    ui->customPlot->replot();
    }
 void ScenePlot::saveToFile(){
-    QString name,date;
+    QString name,date,temp2;
     QString format=".jpg";
     QDateTime temp;
     temp.currentDateTime();
-   // date=temp.toString();
-   // date="graph"+date;
     date= QDateTime::currentDateTime().toString(Qt::ISODate);
     date="graph"+date;
+    temp2=date.replace(":","_");
     QString selFilter="All files (*.*)";
-   name= QFileDialog::getSaveFileName(this,"Save file",date,
+   name= QFileDialog::getSaveFileName(this,"Save file",temp2,
        "JPG files (*.jpg);;All files (*.*)",&selFilter);
     if(!name.isEmpty()){
        if(!name.contains(format)){
