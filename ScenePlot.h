@@ -21,15 +21,24 @@ class ScenePlot : public QDialog
 public:
    explicit ScenePlot(QWidget *parent = nullptr);
    ~ScenePlot();
-   QList<QPointF> pointmas;
+   int n=1;
    void createColorMap();
-
+   void sendMass(QList<QPointF> &nPointmas);
+   QList<QList<QPointF>*> *graphList;
+   QList<QList<QList<QPointF>*>*> tempGraphList;
 public slots:
-   void updateData();
-   void saveToFile();
-   void logScalex();
-   void logScaley();
-  void updateDataMas();
+  void saveToFile();
+  void logScalex();
+  void logScaley();
+  void updateData();
+  void saveTextToFile();
+  void getN();
+  void clearAllGraphs();
+  void timerControl();
+  void sendTimer(QTimer *tempTimer);
+  void sendGraphList(QList<QList<QPointF>*> &nGraphlist);
+ void buildNGraphs();
+ void buildAllGraphs();
 private:
    Ui::ScenePlot *ui;
    };
