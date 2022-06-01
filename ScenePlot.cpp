@@ -18,7 +18,6 @@ ScenePlot::ScenePlot(QWidget *parent) :
 
     currentTimeMs = QDateTime(QDate(2022,1,1),QTime(0,0,0)).msecsTo(QDateTime::currentDateTime());
 
-    createColorMap();
     //   updatePathLinks();
     //   ui->progressBar->setMaximum(ui->SB_ValuesCountTreshold->value()*1000);
     ui->customPlot->xAxis->setVisible(false);
@@ -66,18 +65,6 @@ ScenePlot::~ScenePlot()
 {
     delete ui;
 }
-
-void ScenePlot::createColorMap()
-{
-    QColor tempColor = QColor::fromHsl(0,170,170);
-    for(int i = 0; i< 81; i++){
-        tempColor.setHsl((tempColor.hue()+40)%360,tempColor.hslSaturation(),tempColor.lightness());
-        if (tempColor.hslHue() == 0)
-            tempColor = tempColor.darker(100);
-        colorMap.append(tempColor);
-    }
-}
-
 void ScenePlot::saveToFile(){
     QString name,date,temp2;
     QString format=".jpg";
@@ -138,15 +125,7 @@ void ScenePlot::updateData(){
 
         }
     }
-    const int maxH = 359;
-    int k=0;
-    int step = maxH /graphList->count();
-    for (int i = 0; i <= maxH-step; i += step) {
-        QPen pen;
-        pen.setColor(QColor::fromHsl(i, 255, 127));
-     ui->customPlot->graph(k)->setPen(pen);
-             k++;
-    }
+    setColors();
 
     ui->customPlot->yAxis->rescale(true);
     ui->customPlot->xAxis->rescale(true);
@@ -175,9 +154,12 @@ void ScenePlot::saveTextToFile(){
             return;
         QTextStream out(&file);
         for (int i = 0; i < graphList->at(0)->count(); ++i) {
-            float x=graphList->at(0)->at(i).x();
-            float y=graphList->at(0)->at(i).y();
-            out<<x<<";"<<y<<";"<<"\n";
+            for (int j = 0; j < graphList->count(); ++j) {
+                float x=graphList->at(0)->at(i).x();
+                float y=graphList->at(0)->at(i).y();
+                out<<x<<";"<<y<<";";
+            }
+            out<<"\n";
         }
     }
 }
@@ -188,7 +170,13 @@ void ScenePlot::getN(){
 
 void ScenePlot::clearAllGraphs()
 {
-tempGraphList.clear();
+    tempList.clear();
+    ui->customPlot->clearGraphs();
+    ui->customPlot->yAxis->setRange(0, 1000);
+    ui->customPlot->xAxis->setRange(-1000 , 1000);
+    ui->customPlot->replot();
+    counter=1;
+
 }
 
 void ScenePlot::timerControl(){
@@ -212,113 +200,158 @@ void ScenePlot::buildNGraphs()
 {
     if(graphList==nullptr)
         return;
-    QList<QList<QPointF>*> tempList;
-    tempGraphList.append(new QList<QList<QPointF>*>);
-             for (int j = 0; j < graphList->count(); ++j) {
-
-             for (int i = 0; i < graphList->at(j)->count(); ++i) {
-               int x=graphList->at(j)->at(i).x();
-              int  y=graphList->at(j)->at(i).y();
-                tempGraphList.at(tempGraphList.count()-1)->append(new QList<QPointF>);
-                tempGraphList.at(tempGraphList.count()-1)->at(j)->append(QPointF(x,y));
-
-             }
-         }
-         if (tempGraphList.count()<=n){
-             updateData();
-         }
-         else{
-        for (int j = 0; j < graphList->count(); ++j) {
-             tempList.append(new QList<QPointF>);
-            for (int i = 0; i < graphList->at(j)->count(); ++i) {
-                QPointF tempPoint=QPointF(0,0);
-                for (int k = 0; k < n; ++k) {
-                 tempPoint+=tempGraphList.at(tempGraphList.count()-1-k)->at(j)->at(i);
+    if (counter<=n){
+        if (counter==1){
+            for (int j = 0; j < graphList->count(); ++j) {
+                tempList.append(new QList<QPointF*>);
+                for (int i = 0; i < graphList->at(j)->count(); ++i) {
+                    float y=0,x;
+                    tempList.at(j)->append(new QPointF());
                 }
-             tempList.at(j)->append(tempPoint);
-            }
-
-        }
-        tempGraphList.removeFirst();
-        qDebug()<<tempGraphList.count();
-        ui->customPlot->clearGraphs();
-        QPoint point;
-        for (int j = 0; j < tempList.count(); ++j) {
-            ui->customPlot->addGraph();
-            for (int i = 0; i < tempList.at(j)->count(); ++i) {
-                point=tempList.at(j)->at(i).toPoint();
-                ui->customPlot->graph(j)->addData(point.x(),point.y());
 
             }
         }
-        const int maxH = 359;
-        int k=0;
-        int step = maxH /graphList->count();
-        for (int i = 0; i <= maxH-step; i += step) {
-            QPen pen;
-            pen.setColor(QColor::fromHsl(i, 255, 127));
-         ui->customPlot->graph(k)->setPen(pen);
-                 k++;
+        appendTempGraphList();
+        updateData();
+        counter++;
+    }
+    else {
+        if (counter==(n+1)) {
+            for (int z = 0; z < n-1; ++z) {
+                for (int j = 0; j <graphList->count(); ++j) {
+                    for (int i = 0; i < graphList->at(j)->count(); ++i) {
+                        *(tempGraphList.at(z)->at(j)->at(i))=*(tempGraphList.at(z+1)->at(j)->at(i));
+                    }
+                }
+            }
+
+
+            for (int j = 0; j <graphList->count(); ++j) {
+                for (int i = 0; i < graphList->at(j)->count(); ++i) {
+                    *(tempGraphList.at(tempGraphList.count()-1)->at(j)->at(i))=graphList->at(j)->at(i);
+                }
+            }
+            for (int j = 0; j < graphList->count(); ++j) {
+                for (int i = 0; i < graphList->at(j)->count(); ++i) {
+                    QPointF tempPoint=QPointF(0,0);
+                    for (int k = 0; k < n; ++k) {
+                        tempPoint+=*(tempGraphList.at(tempGraphList.count()-1-k)->at(j)->at(i));
+                    }
+                    *(tempList.at(j)->at(i))=tempPoint;
+
+                }
+
+            }
+            //counter++;
+            buildingGraphs();
         }
 
-        ui->customPlot->yAxis->rescale(true);
-        ui->customPlot->xAxis->rescale(true);
-        ui->customPlot->setInteraction(QCP::iRangeZoom,true);
-        ui->customPlot->setInteraction(QCP::iRangeDrag,true);
-        ui->customPlot->replot();
-         }
+        else {
+//            for (int j = 0; j < graphList->count(); ++j) {
+//                for (int i = 0; i < graphList->at(j)->count(); ++i) {
+//                    *(tempList.at(j)->at(i))+=graphList->at(j)->at(i);
+//                    //*(tempList.at(j)->at(i))-=*(tempGraphList.at(0)->at(j)->at(i));
+
+//                }
+//            }
+            for (int z = 0; z < n-1; ++z) {
+                for (int j = 0; j <graphList->count(); ++j) {
+                    for (int i = 0; i < graphList->at(j)->count(); ++i) {
+                        *(tempGraphList.at(z)->at(j)->at(i))=*(tempGraphList.at(z+1)->at(j)->at(i));
+                    }
+                }
+            }
+
+
+            for (int j = 0; j <graphList->count(); ++j) {
+                for (int i = 0; i < graphList->at(j)->count(); ++i) {
+                    *(tempGraphList.at(tempGraphList.count()-1)->at(j)->at(i))=graphList->at(j)->at(i);
+                }
+            }
+
+            buildingGraphs();
+        }
+    }
 }
+
 
 void ScenePlot::buildAllGraphs()
 {
     if(graphList==nullptr)
         return;
-    QList<QList<QPointF>*> tempList;
-    tempGraphList.append(new QList<QList<QPointF>*>);
-             for (int j = 0; j < graphList->count(); ++j) {
+    if (counter==1){
+        for (int j = 0; j < graphList->count(); ++j) {
+            tempList.append(new QList<QPointF*>);
+            for (int i = 0; i < graphList->at(j)->count(); ++i) {
+                float y=0,x;
+                y=graphList->at(j)->at(i).y();
+                x=graphList->at(j)->at(i).x();
+                tempList.at(j)->append(new QPointF());
+                *(tempList.at(j)->at(i))=QPointF(x,y);
+            }
 
-             for (int i = 0; i < graphList->at(j)->count(); ++i) {
-               int x=graphList->at(j)->at(i).x();
-              int  y=graphList->at(j)->at(i).y();
-                tempGraphList.at(tempGraphList.count()-1)->append(new QList<QPointF>);
-                tempGraphList.at(tempGraphList.count()-1)->at(j)->append(QPointF(x,y));
+        }
+        counter=2;
+    }
+    else{
+        for (int j = 0; j < graphList->count(); ++j) {
+            float y=0,x;
+            for (int i = 0; i < graphList->at(j)->count(); ++i) {
+                y=graphList->at(j)->at(i).y();
+                y+=tempList.at(j)->at(i)->y();
+                x=graphList->at(j)->at(i).x();
+                *(tempList.at(j)->at(i))=QPointF(x,y);
+            }
 
-             }
-         }
-             for (int j = 0; j < graphList->count(); ++j) {
-                  tempList.append(new QList<QPointF>);
-                 for (int i = 0; i < graphList->at(j)->count(); ++i) {
-                     float y=0,x;
-                     for (int k = 0; k < tempGraphList.count(); ++k) {
-                      y+=tempGraphList.at(tempGraphList.count()-1-k)->at(j)->at(i).y();
-                     }
-                     x=tempGraphList.at(tempGraphList.count()-1)->at(j)->at(i).x();
-                  tempList.at(j)->append(QPointF(x,y));
-                 }
+        }
+    }
 
-             }
-             ui->customPlot->clearGraphs();
-             QPoint point;
-             for (int j = 0; j < tempList.count(); ++j) {
-                 ui->customPlot->addGraph();
-                 for (int i = 0; i < tempList.at(j)->count(); ++i) {
-                     point=tempList.at(j)->at(i).toPoint();
-                     ui->customPlot->graph(j)->addData(point.x(),point.y());
+    buildingGraphs();
+}
 
-                 }
-             }
-             const int maxH = 359;
-             int k=0;
-             int step = maxH /graphList->count();
-             for (int i = 0; i <= maxH-step; i += step) {
-                 QPen pen;
-                 pen.setColor(QColor::fromHsl(i, 255, 127));
-              ui->customPlot->graph(k)->setPen(pen);
-                      k++;
-             }
-             ui->customPlot->yAxis->rescale(true);
-             ui->customPlot->xAxis->rescale(true);
-             ui->customPlot->setInteraction(QCP::iRangeZoom,true);
-             ui->customPlot->setInteraction(QCP::iRangeDrag,true);
-             ui->customPlot->replot();
+void ScenePlot::setColors()
+{
+    const int maxH = 359;
+    int k=0;
+    int step = maxH /ui->customPlot->graphCount();
+    for (int i = 0; i <= maxH-step; i += step) {
+        QPen pen;
+        pen.setColor(QColor::fromHsl(i, 255, 127));
+        ui->customPlot->graph(k)->setPen(pen);
+        k++;
+    }
+}
+
+void ScenePlot::appendTempGraphList()
+{
+    tempGraphList.append(new QList<QList<QPointF*>*>);
+    for (int j = 0; j < graphList->count(); ++j) {
+        tempGraphList.at(tempGraphList.count()-1)->append(new QList<QPointF*>);
+        for (int i = 0; i < graphList->at(j)->count(); ++i) {
+            int x=graphList->at(j)->at(i).x();
+            int  y=graphList->at(j)->at(i).y();
+            tempGraphList.at(tempGraphList.count()-1)->at(j)->append(new QPointF(x,y));
+
+        }
+    }
+}
+
+void ScenePlot::buildingGraphs()
+{
+    ui->customPlot->clearGraphs();
+    QPoint point;
+    for (int j = 0; j < tempList.count(); ++j) {
+        ui->customPlot->addGraph();
+        for (int i = 0; i < tempList.at(j)->count(); ++i) {
+            point=tempList.at(j)->at(i)->toPoint();
+            ui->customPlot->graph(j)->addData(point.x(),point.y());
+
+        }
+    }
+    setColors();
+    ui->customPlot->yAxis->rescale(true);
+    ui->customPlot->xAxis->rescale(true);
+    ui->customPlot->setInteraction(QCP::iRangeZoom,true);
+    ui->customPlot->setInteraction(QCP::iRangeDrag,true);
+    ui->customPlot->replot();
 }

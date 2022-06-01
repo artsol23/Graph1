@@ -22,10 +22,11 @@ public:
    explicit ScenePlot(QWidget *parent = nullptr);
    ~ScenePlot();
    int n=1;
-   void createColorMap();
+   int counter=1;
    void sendMass(QList<QPointF> &nPointmas);
    QList<QList<QPointF>*> *graphList;
-   QList<QList<QList<QPointF>*>*> tempGraphList;
+   QList<QList<QList<QPointF*>*>*> tempGraphList;
+    QList<QList<QPointF*>*> tempList;
 public slots:
   void saveToFile();
   void logScalex();
@@ -39,6 +40,9 @@ public slots:
   void sendGraphList(QList<QList<QPointF>*> &nGraphlist);
  void buildNGraphs();
  void buildAllGraphs();
+ void setColors();
+ void appendTempGraphList();
+ void buildingGraphs();
 private:
    Ui::ScenePlot *ui;
    };
