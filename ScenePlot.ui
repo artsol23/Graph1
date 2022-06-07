@@ -49,7 +49,7 @@
           </size>
          </property>
          <property name="text">
-          <string>Save</string>
+          <string>SaveDataAsText</string>
          </property>
         </widget>
        </item>
@@ -63,24 +63,8 @@
          </property>
         </widget>
        </item>
-       <item row="0" column="5">
-        <widget class="QPushButton" name="plotAllMassive">
-         <property name="minimumSize">
-          <size>
-           <width>50</width>
-           <height>30</height>
-          </size>
-         </property>
-         <property name="styleSheet">
-          <string notr="true">font: 12pt &quot;Segoe UI&quot;;</string>
-         </property>
-         <property name="text">
-          <string>plotAllMassives</string>
-         </property>
-        </widget>
-       </item>
        <item row="0" column="3">
-        <widget class="QPushButton" name="plotting5graphs">
+        <widget class="QPushButton" name="plottingNgraphs">
          <property name="minimumSize">
           <size>
            <width>50</width>
@@ -89,22 +73,6 @@
          </property>
          <property name="text">
           <string>plotNgraphs</string>
-         </property>
-        </widget>
-       </item>
-       <item row="1" column="5">
-        <widget class="QPushButton" name="clearData">
-         <property name="minimumSize">
-          <size>
-           <width>50</width>
-           <height>30</height>
-          </size>
-         </property>
-         <property name="styleSheet">
-          <string notr="true">font: 12pt &quot;Segoe UI&quot;;</string>
-         </property>
-         <property name="text">
-          <string>clearData</string>
          </property>
         </widget>
        </item>
@@ -133,7 +101,7 @@
           </size>
          </property>
          <property name="text">
-          <string>stopPlotting</string>
+          <string>plotting is active</string>
          </property>
         </widget>
        </item>
@@ -146,7 +114,23 @@
           </size>
          </property>
          <property name="text">
-          <string>savegraph</string>
+          <string>SaveGraphAsScreenshot</string>
+         </property>
+        </widget>
+       </item>
+       <item row="1" column="2">
+        <widget class="QPushButton" name="clearData">
+         <property name="minimumSize">
+          <size>
+           <width>50</width>
+           <height>30</height>
+          </size>
+         </property>
+         <property name="styleSheet">
+          <string notr="true">font: 12pt &quot;Segoe UI&quot;;</string>
+         </property>
+         <property name="text">
+          <string>clearData</string>
          </property>
         </widget>
        </item>
@@ -200,5 +184,38 @@
   </customwidget>
  </customwidgets>
  <resources/>
- <connections/>
+ <connections>
+  <connection>
+   <sender>plottingNgraphs</sender>
+   <signal>clicked(bool)</signal>
+   <receiver>number_of_graphs</receiver>
+   <slot>setHidden(bool)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>819</x>
+     <y>541</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>817</x>
+     <y>594</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>plottingNgraphs</sender>
+   <signal>clicked(bool)</signal>
+   <receiver>clearData</receiver>
+   <slot>setVisible(bool)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>868</x>
+     <y>552</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>548</x>
+     <y>592</y>
+    </hint>
+   </hints>
+  </connection>
+ </connections>
 </ui>

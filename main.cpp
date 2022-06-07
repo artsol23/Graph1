@@ -44,7 +44,7 @@ int main(int argc, char *argv[])
        }
        }
 
-     w.buildAllGraphs();
+     w.connector();
    });
    w.show();
    return a.exec();

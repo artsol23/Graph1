@@ -23,6 +23,7 @@ public:
    ~ScenePlot();
    int n=1;
    int counter=1;
+   int formatCounter=1;
    void sendMass(QList<QPointF> &nPointmas);
    QList<QList<QPointF>*> *graphList;
    QList<QList<QList<QPointF*>*>*> tempGraphList;
@@ -31,7 +32,6 @@ public slots:
   void saveToFile();
   void logScalex();
   void logScaley();
-  void updateData();
   void saveTextToFile();
   void getN();
   void clearAllGraphs();
@@ -43,6 +43,8 @@ public slots:
  void setColors();
  void appendTempGraphList();
  void buildingGraphs();
+ void connector();
+ void changeFormat();
 private:
    Ui::ScenePlot *ui;
    };

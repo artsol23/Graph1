@@ -9,6 +9,7 @@
 #include <QFileDialog>
 #include <QString>
 #include<QDateTime>
+#include<QTextCursor>
 ScenePlot::ScenePlot(QWidget *parent) :
     QDialog(parent),
     ui(new Ui::ScenePlot)
@@ -34,15 +35,17 @@ ScenePlot::ScenePlot(QWidget *parent) :
     connect(ui->save,&QPushButton::clicked,this,&ScenePlot::saveTextToFile);
     connect(ui->savegraph,&QPushButton::clicked,this,&ScenePlot::saveToFile);
     connect(ui->number_of_graphs,QOverload<int>::of(&QSpinBox::valueChanged),this,&ScenePlot::getN);
-    ui->plotting5graphs->setCheckable(true);
-    ui->plotting5graphs->setText("1graphPlotting");
-    ui->plotAllMassive->setText("1Massive");
-    ui->plotAllMassive->setCheckable(true);
+    ui->plottingNgraphs->setCheckable(true);
+    ui->plottingNgraphs->setText("1graphPlotting");
     ui->xlog->setCheckable(true);
     ui->ylog->setCheckable(true);
+    ui->clearData->setVisible(false);
     ui->stopPlotting->setCheckable(true);
     ui->xlog->setText("xLin");
     ui->ylog->setText("yLin");
+    ui->number_of_graphs->setValue(1);
+    ui->number_of_graphs->setMinimum(1);
+    connect(ui->plottingNgraphs,&QPushButton::clicked,this,&ScenePlot::changeFormat);
     connect(ui->xlog,&QPushButton::clicked,this,&ScenePlot::logScalex);
     connect(ui->ylog,&QPushButton::clicked,this,&ScenePlot::logScaley);
     connect(ui->stopPlotting,&QPushButton::clicked,this,&ScenePlot::timerControl);
@@ -111,29 +114,7 @@ void ScenePlot::logScaley(){
     }
 
 }
-void ScenePlot::updateData(){
-    ui->customPlot->clearGraphs();
-    QPoint point;
 
-    if(graphList==nullptr)
-        return;
-    for (int j = 0; j < graphList->count(); ++j) {
-        ui->customPlot->addGraph();
-        for (int i = 0; i < graphList->at(j)->count(); ++i) {
-            point=graphList->at(j)->at(i).toPoint();
-            ui->customPlot->graph(j)->addData(point.x(),point.y());
-
-        }
-    }
-    setColors();
-
-    ui->customPlot->yAxis->rescale(true);
-    ui->customPlot->xAxis->rescale(true);
-    ui->customPlot->setInteraction(QCP::iRangeZoom,true);
-    ui->customPlot->setInteraction(QCP::iRangeDrag,true);
-    ui->customPlot->replot();
-
-}
 void ScenePlot::saveTextToFile(){
     QString name,date,temp2;
     QString format=".txt";
@@ -152,12 +133,23 @@ void ScenePlot::saveTextToFile(){
         QFile file=QFile(name);
         if (!file.open(QIODevice::WriteOnly | QIODevice::Text))
             return;
+
         QTextStream out(&file);
-        for (int i = 0; i < graphList->at(0)->count(); ++i) {
+        int maxAmount=0;
+        for (int j = 0; j < graphList->count(); ++j) {
+           if (graphList->at(j)->count()>maxAmount)
+               maxAmount=graphList->at(j)->count();
+        }
+        for (int i = 0; i < maxAmount; ++i) {
             for (int j = 0; j < graphList->count(); ++j) {
-                float x=graphList->at(0)->at(i).x();
-                float y=graphList->at(0)->at(i).y();
+                if (i<=graphList->at(j)->count()){
+                float x=graphList->at(j)->at(i).x();
+                float y=graphList->at(j)->at(i).y();
                 out<<x<<";"<<y<<";";
+                }
+                else
+                   out<<"NAN"<<";"<<"NAN"<<";";
+
             }
             out<<"\n";
         }
@@ -171,7 +163,12 @@ void ScenePlot::getN(){
     tempList.clear();
     qDeleteAll(tempGraphList.begin(),tempGraphList.end());
     tempGraphList.clear();
+    ui->customPlot->clearGraphs();
+    ui->customPlot->yAxis->setRange(0, 1000);
+    ui->customPlot->xAxis->setRange(-1000 , 1000);
+    ui->customPlot->replot();
     counter=1;
+    ui->plottingNgraphs->setText(QString::number(n)+"graphsPlotting");
 }
 
 void ScenePlot::clearAllGraphs()
@@ -188,9 +185,11 @@ void ScenePlot::clearAllGraphs()
 void ScenePlot::timerControl(){
     if( ui->stopPlotting->isChecked()){
         timer->stop();
+        ui->stopPlotting->setText("plotting stopped");
     }
     else{
         timer->start();
+        ui->stopPlotting->setText("plotting is active");
     }
 }
 void ScenePlot::sendTimer(QTimer *tempTimer){
@@ -219,7 +218,6 @@ void ScenePlot::buildNGraphs()
             }
         }
         appendTempGraphList();
-        updateData();
         counter++;
     }
     else {
@@ -363,4 +361,37 @@ void ScenePlot::buildingGraphs()
     ui->customPlot->setInteraction(QCP::iRangeZoom,true);
     ui->customPlot->setInteraction(QCP::iRangeDrag,true);
     ui->customPlot->replot();
+}
+
+void ScenePlot::connector()
+{
+    if(formatCounter==1){
+        buildNGraphs();
+    }
+    else{
+        buildAllGraphs();
+    }
+
+}
+
+void ScenePlot::changeFormat()
+{
+    if(ui->plottingNgraphs->isChecked()){
+        formatCounter=2;
+        ui->plottingNgraphs->setText("AllgraphsPlotting");
+        qDeleteAll(tempList.begin(),tempList.end());
+        tempList.clear();
+        qDeleteAll(tempGraphList.begin(),tempGraphList.end());
+        tempGraphList.clear();
+        counter=1;
+        n=1;
+    }
+    else{
+        formatCounter=1;
+        ui->plottingNgraphs->setText("1graphPlotting");
+        ui->number_of_graphs->setValue(1);
+        clearAllGraphs();
+        counter=1;
+    }
+
 }
