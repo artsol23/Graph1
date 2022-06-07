@@ -165,18 +165,24 @@ void ScenePlot::saveTextToFile(){
 }
 
 void ScenePlot::getN(){
+
     n=ui->number_of_graphs->value();
+    qDeleteAll(tempList.begin(),tempList.end());
+    tempList.clear();
+    qDeleteAll(tempGraphList.begin(),tempGraphList.end());
+    tempGraphList.clear();
+    counter=1;
 }
 
 void ScenePlot::clearAllGraphs()
 {
+    qDeleteAll(tempList.begin(),tempList.end());
     tempList.clear();
     ui->customPlot->clearGraphs();
     ui->customPlot->yAxis->setRange(0, 1000);
     ui->customPlot->xAxis->setRange(-1000 , 1000);
     ui->customPlot->replot();
     counter=1;
-
 }
 
 void ScenePlot::timerControl(){
@@ -202,6 +208,7 @@ void ScenePlot::buildNGraphs()
         return;
     if (counter<=n){
         if (counter==1){
+            tempList.clear();
             for (int j = 0; j < graphList->count(); ++j) {
                 tempList.append(new QList<QPointF*>);
                 for (int i = 0; i < graphList->at(j)->count(); ++i) {
@@ -217,6 +224,18 @@ void ScenePlot::buildNGraphs()
     }
     else {
         if (counter==(n+1)) {
+            for (int j = 0; j < graphList->count(); ++j) {
+                for (int i = 0; i < graphList->at(j)->count(); ++i) {
+                    QPointF tempPoint=QPointF(0,0);
+                    for (int k = 0; k < n; ++k) {
+                        tempPoint+=*(tempGraphList.at(tempGraphList.count()-1-k)->at(j)->at(i));
+                    }
+                    *(tempList.at(j)->at(i))=tempPoint;
+
+                }
+
+            }
+
             for (int z = 0; z < n-1; ++z) {
                 for (int j = 0; j <graphList->count(); ++j) {
                     for (int i = 0; i < graphList->at(j)->count(); ++i) {
@@ -231,29 +250,19 @@ void ScenePlot::buildNGraphs()
                     *(tempGraphList.at(tempGraphList.count()-1)->at(j)->at(i))=graphList->at(j)->at(i);
                 }
             }
-            for (int j = 0; j < graphList->count(); ++j) {
-                for (int i = 0; i < graphList->at(j)->count(); ++i) {
-                    QPointF tempPoint=QPointF(0,0);
-                    for (int k = 0; k < n; ++k) {
-                        tempPoint+=*(tempGraphList.at(tempGraphList.count()-1-k)->at(j)->at(i));
-                    }
-                    *(tempList.at(j)->at(i))=tempPoint;
-
-                }
-
-            }
-            //counter++;
+            counter++;
             buildingGraphs();
         }
 
         else {
-//            for (int j = 0; j < graphList->count(); ++j) {
-//                for (int i = 0; i < graphList->at(j)->count(); ++i) {
-//                    *(tempList.at(j)->at(i))+=graphList->at(j)->at(i);
-//                    //*(tempList.at(j)->at(i))-=*(tempGraphList.at(0)->at(j)->at(i));
+            for (int j = 0; j < graphList->count(); ++j) {
+                for (int i = 0; i < graphList->at(j)->count(); ++i) {
+                    *(tempList.at(j)->at(i))+=graphList->at(j)->at(i);
+                    *(tempList.at(j)->at(i))-= (*(tempGraphList.at(0)->at(j)->at(i)));
 
-//                }
-//            }
+                }
+            }
+
             for (int z = 0; z < n-1; ++z) {
                 for (int j = 0; j <graphList->count(); ++j) {
                     for (int i = 0; i < graphList->at(j)->count(); ++i) {

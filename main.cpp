@@ -44,7 +44,7 @@ int main(int argc, char *argv[])
        }
        }
 
-     w.buildNGraphs();
+     w.buildAllGraphs();
    });
    w.show();
    return a.exec();

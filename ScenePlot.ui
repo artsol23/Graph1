@@ -24,21 +24,24 @@
     <layout class="QGridLayout" name="gridLayout_2">
      <item row="1" column="0">
       <layout class="QGridLayout" name="gridLayout_5">
-       <item row="0" column="1">
-        <widget class="QPushButton" name="savegraph">
+       <item row="0" column="4">
+        <widget class="QPushButton" name="ylog">
          <property name="minimumSize">
           <size>
            <width>50</width>
            <height>30</height>
           </size>
          </property>
+         <property name="styleSheet">
+          <string notr="true">font: 12pt &quot;Segoe UI&quot;;</string>
+         </property>
          <property name="text">
-          <string>savegraph</string>
+          <string>ylog</string>
          </property>
         </widget>
        </item>
-       <item row="0" column="2">
-        <widget class="QPushButton" name="stopPlotting">
+       <item row="0" column="0">
+        <widget class="QPushButton" name="save">
          <property name="minimumSize">
           <size>
            <width>50</width>
@@ -46,7 +49,33 @@
           </size>
          </property>
          <property name="text">
-          <string>stopPlotting</string>
+          <string>Save</string>
+         </property>
+        </widget>
+       </item>
+       <item row="1" column="3">
+        <widget class="QSpinBox" name="number_of_graphs">
+         <property name="minimumSize">
+          <size>
+           <width>50</width>
+           <height>40</height>
+          </size>
+         </property>
+        </widget>
+       </item>
+       <item row="0" column="5">
+        <widget class="QPushButton" name="plotAllMassive">
+         <property name="minimumSize">
+          <size>
+           <width>50</width>
+           <height>30</height>
+          </size>
+         </property>
+         <property name="styleSheet">
+          <string notr="true">font: 12pt &quot;Segoe UI&quot;;</string>
+         </property>
+         <property name="text">
+          <string>plotAllMassives</string>
          </property>
         </widget>
        </item>
@@ -60,16 +89,6 @@
          </property>
          <property name="text">
           <string>plotNgraphs</string>
-         </property>
-        </widget>
-       </item>
-       <item row="1" column="3">
-        <widget class="QSpinBox" name="number_of_graphs">
-         <property name="minimumSize">
-          <size>
-           <width>50</width>
-           <height>40</height>
-          </size>
          </property>
         </widget>
        </item>
@@ -105,8 +124,8 @@
          </property>
         </widget>
        </item>
-       <item row="0" column="0">
-        <widget class="QPushButton" name="save">
+       <item row="0" column="2">
+        <widget class="QPushButton" name="stopPlotting">
          <property name="minimumSize">
           <size>
            <width>50</width>
@@ -114,39 +133,20 @@
           </size>
          </property>
          <property name="text">
-          <string>Save</string>
+          <string>stopPlotting</string>
          </property>
         </widget>
        </item>
-       <item row="0" column="5">
-        <widget class="QPushButton" name="plotAllMassive">
+       <item row="0" column="1">
+        <widget class="QPushButton" name="savegraph">
          <property name="minimumSize">
           <size>
            <width>50</width>
            <height>30</height>
           </size>
          </property>
-         <property name="styleSheet">
-          <string notr="true">font: 12pt &quot;Segoe UI&quot;;</string>
-         </property>
          <property name="text">
-          <string>plotAllMassives</string>
-         </property>
-        </widget>
-       </item>
-       <item row="0" column="4">
-        <widget class="QPushButton" name="ylog">
-         <property name="minimumSize">
-          <size>
-           <width>50</width>
-           <height>30</height>
-          </size>
-         </property>
-         <property name="styleSheet">
-          <string notr="true">font: 12pt &quot;Segoe UI&quot;;</string>
-         </property>
-         <property name="text">
-          <string>ylog</string>
+          <string>savegraph</string>
          </property>
         </widget>
        </item>
