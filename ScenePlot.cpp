@@ -42,7 +42,7 @@ ScenePlot::ScenePlot(QWidget *parent) :
     ui->stop->setEnabled(false);
     ui->start->setCheckable(true);
     ui->stop->setCheckable(true);
-
+    ui->customPlot->legend->setVisible(true);
 
 
     connect(ui->start, &QPushButton::clicked, [=](){
@@ -67,9 +67,10 @@ ScenePlot::ScenePlot(QWidget *parent) :
 
         auto * channels = menu->addMenu("Channels");
         for (int i = 0; i<graphList->count(); i++){
-            QCheckBox *checkBox = new QCheckBox(QString("Channel %1").arg(i), channels);
+            QCheckBox *checkBox = new QCheckBox(QString("Channel %1").arg(i+1), channels);
             if(ui->customPlot->graphCount()!=0)
                 checkBox->setChecked(ui->customPlot->graph(i)->visible());
+
             QWidgetAction *checkableAction = new QWidgetAction(channels);
             checkableAction->setDefaultWidget(checkBox);
             channels->addAction(checkableAction);

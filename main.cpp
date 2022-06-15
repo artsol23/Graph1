@@ -29,20 +29,20 @@ int main(int argc, char *argv[])
    timer = new QTimer();
    timer->setInterval(200);
    timer->start();
-//   QTimer *timer1;
-//   timer1 = new QTimer();
+//  QTimer *timer1;
+//  timer1 = new QTimer();
 //   timer1->setInterval(20000);
-//   timer1->start();
+//  timer1->start();
    QRandomGenerator generator;
    ScenePlot w = ScenePlot();
    w.sendTimer(timer);
    w.sendGraphList(graphList);
 //   QObject::connect(timer1,&QTimer::timeout,[&graphList,&w,&generator,&timer1](){
 
-//    graphList.append(new QList<QPointF>());
+//   graphList.append(new QList<QPointF>());
 
 
-//   });
+//  });
    QObject::connect(timer,&QTimer::timeout,[&graphList,&w,&generator](){
 
        for (int j = 0; j < graphList.count(); ++j) {
