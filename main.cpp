@@ -18,13 +18,10 @@ int main(int argc, char *argv[])
    QApplication a(argc, argv);
 
 //   QCoreApplication::addLibraryPath("c:/Program Files/Swabian Instruments/TimeTagger2_7_6/driver/x86");
-   QList<QPointF> pointmas1;
-   //generation
-   for (int i = 0; i < 1000; ++i) {
-   pointmas1.append(QPointF(i,i));
-  }
+
+
    QList<QList<QPointF>*> graphList;
-   for (int i = 0; i < 4; ++i) {
+   for (int i = 0; i < 6; ++i) {
        graphList.append(new QList<QPointF>());
    }
 
@@ -32,11 +29,22 @@ int main(int argc, char *argv[])
    timer = new QTimer();
    timer->setInterval(200);
    timer->start();
+//   QTimer *timer1;
+//   timer1 = new QTimer();
+//   timer1->setInterval(20000);
+//   timer1->start();
    QRandomGenerator generator;
    ScenePlot w = ScenePlot();
    w.sendTimer(timer);
    w.sendGraphList(graphList);
+//   QObject::connect(timer1,&QTimer::timeout,[&graphList,&w,&generator,&timer1](){
+
+//    graphList.append(new QList<QPointF>());
+
+
+//   });
    QObject::connect(timer,&QTimer::timeout,[&graphList,&w,&generator](){
+
        for (int j = 0; j < graphList.count(); ++j) {
             graphList.at(j)->clear();
        for (int i = 0; i < 1000; ++i) {
@@ -45,6 +53,7 @@ int main(int argc, char *argv[])
        }
 
      w.connector();
+
    });
    w.show();
    return a.exec();
