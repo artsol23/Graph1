@@ -67,7 +67,7 @@ ScenePlot::ScenePlot(QWidget *parent) :
 
         auto * channels = menu->addMenu("Channels");
         for (int i = 0; i<graphList->count(); i++){
-            QCheckBox *checkBox = new QCheckBox(QString("Channel %1").arg(i+1), channels);
+            QCheckBox *checkBox = new QCheckBox(QString("Channel %1").arg(i), channels);
             if(ui->customPlot->graphCount()!=0)
                 checkBox->setChecked(ui->customPlot->graph(i)->visible());
 
