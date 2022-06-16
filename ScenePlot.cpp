@@ -65,9 +65,9 @@ ScenePlot::ScenePlot(QWidget *parent) :
         auto *menu = new QMenu(this);
         menu->setAttribute(Qt::WA_DeleteOnClose);
 
-        auto * channels = menu->addMenu("Channels");
+        auto * channels = menu->addMenu("Graphs");
         for (int i = 0; i<graphList->count(); i++){
-            QCheckBox *checkBox = new QCheckBox(QString("Channel %1").arg(i), channels);
+            QCheckBox *checkBox = new QCheckBox(QString("Graph %1").arg(i+1), channels);
             if(ui->customPlot->graphCount()!=0)
                 checkBox->setChecked(ui->customPlot->graph(i)->visible());
 
@@ -76,9 +76,18 @@ ScenePlot::ScenePlot(QWidget *parent) :
             channels->addAction(checkableAction);
             if(ui->customPlot->graphCount()!=0)
                 connect(checkBox, &QCheckBox::stateChanged, [=](int value){
-                    int index = checkBox->text().split(" ")[1].toInt();
+                    int index = checkBox->text().split(" ")[1].toInt()-1;
                     ui->customPlot->graph(index)->setVisible(value);
-                    if (value) ui->customPlot->graph(index)->addToLegend(ui->customPlot->legend);
+                    if (value){
+
+                        ui->customPlot->legend->clear();
+                        for (int i = 0; i < ui->customPlot->graphCount(); ++i) {
+                           if(ui->customPlot->graph(i)->visible())
+                           ui->customPlot->graph(i)->addToLegend(ui->customPlot->legend);
+                        }
+
+
+                    }
                     else ui->customPlot->graph(index)->removeFromLegend(ui->customPlot->legend);
                     ui->customPlot->legend->setVisible(ui->customPlot->legend->elementCount() != 0);
                     ui->customPlot->replot();
