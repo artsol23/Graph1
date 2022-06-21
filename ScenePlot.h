@@ -23,7 +23,10 @@ public:
    ~ScenePlot();
    int n=1;
    int counter=1;
+   QMenu *menu;
+   QMenu * channels;
    bool formatCounter=true;
+
    bool rescaleCounter=true;
    void sendMass(QList<QPointF> &nPointmas);
    QList<QList<QPointF>*> *graphList;
@@ -44,6 +47,9 @@ public slots:
  void connector();
  void clearTemplist();
  void clearTempGraphList();
+ void updateGraphAmount();
+
+
 
 
 

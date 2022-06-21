@@ -10,7 +10,7 @@
 #include <QString>
 #include<QDateTime>
 #include<QTextCursor>
-
+#include <QCloseEvent>
 #include <QInputDialog>
 
 
@@ -30,6 +30,11 @@ ScenePlot::ScenePlot(QWidget *parent) :
     ui->customPlot->yAxis->setVisible(false);
     ui->customPlot->yAxis->setTickLabels(true);
 
+
+    menu=new QMenu(this);
+    menu->setAttribute(Qt::WA_DeleteOnClose);
+
+
     connect(ui->clearAllData,&QPushButton::clicked,this,clearAllData);
     ui->customPlot->yAxis->setRange(0, 1000);
     ui->customPlot->xAxis->setRange(-1000 , 1000);
@@ -37,7 +42,6 @@ ScenePlot::ScenePlot(QWidget *parent) :
     ui->customPlot->xAxis->setLabel("t (s)");
     ui->customPlot->yAxis->setLabel("counts");
     ui->customPlot->axisRect()->setupFullAxesBox(true);
-
 
     ui->stop->setEnabled(false);
     ui->start->setCheckable(true);
@@ -61,13 +65,16 @@ ScenePlot::ScenePlot(QWidget *parent) :
     ui->customPlot->setContextMenuPolicy(Qt::CustomContextMenu);
     connect(ui->customPlot, &QCustomPlot::customContextMenuRequested,
             [=](QPoint position){
+        menu = new QMenu(this);
+        //*menu->setAttribute(Qt::WA_DeleteOnClose);
 
-        auto *menu = new QMenu(this);
-        menu->setAttribute(Qt::WA_DeleteOnClose);
 
-        auto * channels = menu->addMenu("Graphs");
+        channels = menu->addMenu("Channels");
+
+
+
         for (int i = 0; i<graphList->count(); i++){
-            QCheckBox *checkBox = new QCheckBox(QString("Graph %1").arg(i+1), channels);
+            QCheckBox *checkBox = new QCheckBox(QString("Channel %1").arg(i+1), channels);
             if(ui->customPlot->graphCount()!=0)
                 checkBox->setChecked(ui->customPlot->graph(i)->visible());
 
@@ -82,8 +89,8 @@ ScenePlot::ScenePlot(QWidget *parent) :
 
                         ui->customPlot->legend->clear();
                         for (int i = 0; i < ui->customPlot->graphCount(); ++i) {
-                           if(ui->customPlot->graph(i)->visible())
-                           ui->customPlot->graph(i)->addToLegend(ui->customPlot->legend);
+                            if(ui->customPlot->graph(i)->visible())
+                                ui->customPlot->graph(i)->addToLegend(ui->customPlot->legend);
                         }
 
 
@@ -162,8 +169,9 @@ ScenePlot::ScenePlot(QWidget *parent) :
             saveToFile();
         });
 
-
         menu->popup(ui->customPlot->mapToGlobal(position));
+
+
     });
 
     //   connect(ui->PB_SelectFolder,&QPushButton::clicked,this,&CountratePlot::callOpenFolderDialog);
@@ -205,13 +213,16 @@ void ScenePlot::saveTextToFile(){
     QString name,date,temp2;
     QString format=".txt";
     QDateTime temp;
+    QFileDialog dialog;
     temp.currentDateTime();
     date= QDateTime::currentDateTime().toString(Qt::ISODate);
     date="data"+date;
     temp2=date.replace(":","_");
     QString selFilter="All files (*.*)";
-    name= QFileDialog::getSaveFileName(this,"Save file",temp2,
-                                       "CSV files (*.txt);;All files (*.*)",&selFilter);
+    name= dialog.getSaveFileName(this,"Save file",temp2,
+                                 "CSV files (*.txt);;All files (*.*)",&selFilter);
+    if(tempList.isEmpty())
+        return;
     if(!name.isEmpty()){
         if(!name.contains(format)){
             name+=format;
@@ -222,10 +233,10 @@ void ScenePlot::saveTextToFile(){
 
         QTextStream out(&file);
 
-        for (int i = 0; i < graphList->at(0)->count(); ++i) {
-            for (int j = 0; j < graphList->count(); ++j) {
-                float x=graphList->at(j)->at(i).x();
-                float y=graphList->at(j)->at(i).y();
+        for (int i = 0; i < tempList.at(0)->count(); ++i) {
+            for (int j = 0; j < tempList.count(); ++j) {
+                float x=tempList.at(j)->at(i)->x();
+                float y=tempList.at(j)->at(i)->y();
                 if (j==0)
                     out<<x<<";";
                 out<<y<<";";
@@ -241,15 +252,8 @@ void ScenePlot::saveTextToFile(){
 void ScenePlot::clearAllData()
 {
     clearTemplist();
-    if(ui->customPlot->graphCount()<graphList->count()){
-        counter=1;
-        clearTemplist();
-        clearTempGraphList();
-    }
-    for (int j = ui->customPlot->graphCount(); j < graphList->count(); ++j) {
-        ui->customPlot->addGraph();
-
-    }
+    if(graphList->count()!=ui->customPlot->graphCount())
+        updateGraphAmount();
 
     for (int j = 0; j < graphList->count(); ++j) {
         ui->customPlot->graph(j)->data().data()->clear();
@@ -276,17 +280,8 @@ void ScenePlot::buildNGraphs()
 {
     if(graphList==nullptr)
         return;
-    if(ui->customPlot->graphCount()<graphList->count()){
-        counter=1;
-        clearTemplist();
-        clearTempGraphList();
-        for (int j = ui->customPlot->graphCount(); j < graphList->count(); ++j) {
-            ui->customPlot->addGraph();
-
-        }
-
-
-    }
+    if(graphList->count()!=ui->customPlot->graphCount())
+        updateGraphAmount();
     if (counter<=n){
         if (counter==1){
             for (int j = 0; j < graphList->count(); ++j) {
@@ -303,8 +298,8 @@ void ScenePlot::buildNGraphs()
         else{
             for (int j = 0; j < graphList->count(); ++j) {
                 for (int i = 0; i < graphList->at(j)->count(); ++i) {
-                    float y,x;
-                    x=graphList->at(j)->at(i).x();
+                    float y,x=0;
+
                     y=graphList->at(j)->at(i).y();
                     *( tempList.at(j)->at(i))+=QPointF(x,y);
                 }
@@ -313,6 +308,7 @@ void ScenePlot::buildNGraphs()
         }
         appendTempGraphList();
         counter++;
+        buildingGraphs();
     }
     else {
 
@@ -349,15 +345,8 @@ void ScenePlot::buildAllGraphs()
 {
     if(graphList==nullptr)
         return;
-    if(ui->customPlot->graphCount()<graphList->count()){
-        counter=1;
-        clearTemplist();
-
-        for (int j = ui->customPlot->graphCount(); j < graphList->count(); ++j) {
-            ui->customPlot->addGraph();
-
-        }
-    }
+    if(graphList->count()!=ui->customPlot->graphCount())
+        updateGraphAmount();
     if (counter==1){
 
         for (int j = 0; j < graphList->count(); ++j) {
@@ -493,7 +482,16 @@ void ScenePlot::clearTempGraphList()
     tempGraphList.clear();
 }
 
+void ScenePlot::updateGraphAmount()
+{
+    counter=1;
+    clearTemplist();
+    clearTempGraphList();
 
+    menu->setHidden(true);
+    ui->customPlot->clearGraphs();
+    for (int i = 0; i < graphList->count(); ++i) {
+        ui->customPlot->addGraph();
 
-
-
+    }
+}
